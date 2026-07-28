@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { Navigate } from "react-router-dom";
@@ -17,7 +17,7 @@ import "./style.css";
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <ToastProvider>
         <AuthProvider>
           <Navbar />
@@ -49,7 +49,7 @@ function App() {
           </Routes>
         </AuthProvider>
       </ToastProvider>
-    </BrowserRouter>
+    </Router>
   );
 }
 
