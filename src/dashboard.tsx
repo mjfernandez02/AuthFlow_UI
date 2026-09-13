@@ -1,77 +1,97 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./hooks/useAuth.js";
-import {
-  Overview,
-  SecurityCenter,
-  ApiKeys,
-  Sessions,
-} from "./dashboard/index.jsx";
 import "./Dashboard.css";
 
-const NAV = [
-  { id: "overview", label: "Overview", icon: "⊞" },
-  { id: "security", label: "Security Center", icon: "🛡" },
-  { id: "keys", label: "API Keys", icon: "🔑" },
-  { id: "sessions", label: "Active Sessions", icon: "💻" },
+type PageKey = "home" | "learn" | "practice" | "collection" | "rewards";
+type IconName = "home" | "book" | "spark" | "layers" | "gift" | "fire" | "bolt" | "gem" | "target" | "clock" | "arrow" | "check" | "lock" | "sound" | "close";
+type Word = { word: string; pronunciation: string; type: string; definition: string; example: string; difficulty: "Easy" | "Medium" | "Hard" };
+type Progress = { xp: number; coins: number; streak: number; learned: string[]; completedToday: number };
+
+const WORDS: Word[] = [
+  { word: "Serendipity", pronunciation: "/ˌser.ənˈdɪp.ə.ti/", type: "noun", definition: "The chance occurrence of a happy or useful discovery.", example: "Finding that quiet bookshop was pure serendipity.", difficulty: "Medium" },
+  { word: "Eloquent", pronunciation: "/ˈel.ə.kwənt/", type: "adjective", definition: "Fluent, persuasive, and graceful in expression.", example: "Her eloquent speech moved everyone in the room.", difficulty: "Easy" },
+  { word: "Ephemeral", pronunciation: "/ɪˈfem.ər.əl/", type: "adjective", definition: "Lasting for only a very short time.", example: "The ephemeral beauty of the sunset made it precious.", difficulty: "Medium" },
+  { word: "Pragmatic", pronunciation: "/præɡˈmæt.ɪk/", type: "adjective", definition: "Dealing with problems in a practical, realistic way.", example: "We took a pragmatic approach to the tight deadline.", difficulty: "Easy" },
+  { word: "Perspicacious", pronunciation: "/ˌpɜː.spɪˈkeɪ.ʃəs/", type: "adjective", definition: "Having a ready insight into things; perceptive.", example: "The perspicacious editor spotted the flaw immediately.", difficulty: "Hard" },
+  { word: "Resilient", pronunciation: "/rɪˈzɪl.i.ənt/", type: "adjective", definition: "Able to recover quickly from difficulty or change.", example: "The resilient team adapted after the setback.", difficulty: "Easy" },
 ];
 
-const PAGES = {
-  overview: Overview,
-  security: SecurityCenter,
-  keys: ApiKeys,
-  sessions: Sessions,
-};
+const DISTRACTORS = ["A feeling of worry about an uncertain outcome.", "Deliberately unclear or difficult to understand.", "A strong dislike of change or new ideas.", "Done secretly and without permission.", "Full of energy, movement, and noise."];
+const NAV: { id: PageKey; label: string; icon: IconName }[] = [
+  { id: "home", label: "Home", icon: "home" }, { id: "learn", label: "Learn", icon: "book" }, { id: "practice", label: "Practice", icon: "spark" }, { id: "collection", label: "My words", icon: "layers" }, { id: "rewards", label: "Rewards", icon: "gift" },
+];
+const DEFAULT_PROGRESS: Progress = { xp: 1240, coins: 385, streak: 7, learned: ["Eloquent", "Pragmatic"], completedToday: 6 };
+
+function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
+  const paths: Record<IconName, React.ReactNode> = {
+    home: <><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></>,
+    book: <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></>,
+    spark: <path d="m12 3-1.2 4.1a5 5 0 0 1-3.4 3.4L3 12l4.4 1.5a5 5 0 0 1 3.4 3.4L12 21l1.2-4.1a5 5 0 0 1 3.4-3.4L21 12l-4.4-1.5a5 5 0 0 1-3.4-3.4L12 3Z"/>,
+    layers: <><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 17l9 5 9-5"/></>,
+    gift: <><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M7.5 8C5 8 4 6.7 4 5.3 4 4 5 3 6.3 3 8.6 3 10.4 5.8 12 8M16.5 8C19 8 20 6.7 20 5.3 20 4 19 3 17.7 3 15.4 3 13.6 5.8 12 8"/></>,
+    fire: <path d="M12.8 2.3c.4 3-1 4.7-2.5 6.2-1.4-1-1.7-2.4-1.5-3.7C6 7 4 9.7 4 13a8 8 0 0 0 16 0c0-4.3-2.7-8.1-7.2-10.7Z"/>,
+    bolt: <path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/>,
+    gem: <><path d="m3 8 4-5h10l4 5-9 13L3 8Z"/><path d="m3 8 9 4 9-4M7 3l5 9 5-9"/></>,
+    target: <><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></>,
+    clock: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>, arrow: <><path d="M5 12h14M14 7l5 5-5 5"/></>, check: <path d="m5 12 4 4L19 6"/>,
+    lock: <><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></>,
+    sound: <><path d="M11 5 6 9H3v6h3l5 4V5ZM15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/></>, close: <><path d="m6 6 12 12M18 6 6 18"/></>,
+  };
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+}
+
+function loadProgress(): Progress {
+  try { const stored = localStorage.getItem("lexiloop-progress"); return stored ? { ...DEFAULT_PROGRESS, ...JSON.parse(stored) } : DEFAULT_PROGRESS; }
+  catch { return DEFAULT_PROGRESS; }
+}
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
-  const [page, setPage] = useState<PageKey>("overview");
-  const Page = PAGES[page];
+  const [page, setPage] = useState<PageKey>("home");
+  const [progress, setProgress] = useState<Progress>(loadProgress);
+  const [mobileNav, setMobileNav] = useState(false);
+  const [quizIndex, setQuizIndex] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [sessionComplete, setSessionComplete] = useState(false);
+  const [toast, setToast] = useState("");
 
-  type PageKey = keyof typeof PAGES;
+  useEffect(() => { localStorage.setItem("lexiloop-progress", JSON.stringify(progress)); }, [progress]);
+  useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(""), 2600); return () => window.clearTimeout(timer); }, [toast]);
 
-  const initials = user?.email
-    ? user.email.split("@")[0].slice(0, 2).toUpperCase()
-    : "??";
+  const username = user?.name || user?.email?.split("@")[0] || "Wordsmith";
+  const initials = username.slice(0, 2).toUpperCase();
+  const currentWord = WORDS[quizIndex % WORDS.length];
+  const choices = useMemo(() => { const offset = quizIndex % DISTRACTORS.length; return [currentWord.definition, DISTRACTORS[offset], DISTRACTORS[(offset + 2) % DISTRACTORS.length]].sort((a, b) => a.length - b.length); }, [currentWord, quizIndex]);
+  const navigate = (next: PageKey) => { setPage(next); setMobileNav(false); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const answer = (choice: string) => { if (selected) return; setSelected(choice); if (choice === currentWord.definition) { setProgress((old) => ({ ...old, xp: old.xp + 20, coins: old.coins + 5, completedToday: Math.min(10, old.completedToday + 1), learned: old.learned.includes(currentWord.word) ? old.learned : [...old.learned, currentWord.word] })); setToast("Correct! +20 XP and +5 coins"); } };
+  const nextQuestion = () => { if (quizIndex >= 4) setSessionComplete(true); else { setQuizIndex((index) => index + 1); setSelected(null); } };
+  const restartPractice = () => { setQuizIndex(0); setSelected(null); setSessionComplete(false); };
+  const redeem = (cost: number, label: string) => { if (progress.coins < cost) { setToast(`You need ${cost - progress.coins} more coins`); return; } setProgress((old) => ({ ...old, coins: old.coins - cost })); setToast(`${label} unlocked!`); };
+  const speak = (word: string) => { if ("speechSynthesis" in window) { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(word)); } };
 
-  return (
-    <div className="dash-app">
-      <aside className="dash-sidebar-icon">
-        <div className="sb-logo">AF</div>
+  const renderHome = () => <>
+    <section className="welcome-row"><div><p className="eyebrow-copy">TODAY’S LEARNING</p><h1>Good evening, {username}.</h1><p className="welcome-copy">Small words, big progress. Let’s keep your momentum going.</p></div><button className="primary-action" onClick={() => navigate("practice")}>Start today’s lesson <Icon name="arrow" size={18} /></button></section>
+    <section className="stat-strip"><article className="mini-stat"><span className="stat-icon flame"><Icon name="fire" /></span><div><strong>{progress.streak} days</strong><span>Current streak</span></div></article><article className="mini-stat"><span className="stat-icon purple"><Icon name="bolt" /></span><div><strong>{progress.xp.toLocaleString()} XP</strong><span>Total experience</span></div></article><article className="mini-stat"><span className="stat-icon yellow"><Icon name="gem" /></span><div><strong>{progress.coins}</strong><span>Word coins</span></div></article><article className="mini-stat"><span className="stat-icon blue"><Icon name="layers" /></span><div><strong>{progress.learned.length}</strong><span>Words mastered</span></div></article></section>
+    <section className="dashboard-grid"><article className="panel daily-goal"><div className="panel-heading"><div><span className="section-kicker">DAILY GOAL</span><h2>You’re almost there</h2></div><span className="goal-count">{progress.completedToday}<small>/10 words</small></span></div><div className="progress-track"><span style={{ width: `${Math.min(100, progress.completedToday * 10)}%` }} /></div><div className="goal-footer"><span><Icon name="clock" size={16} /> About 4 minutes left</span><button onClick={() => navigate("practice")}>Keep learning <Icon name="arrow" size={15} /></button></div></article>
+    <article className="panel streak-card"><div className="streak-top"><div className="streak-flame"><Icon name="fire" size={28} /></div><div><span className="section-kicker">YOUR STREAK</span><h2>{progress.streak} days strong</h2></div></div><div className="week-row">{["M", "T", "W", "T", "F", "S", "S"].map((day, index) => <div key={`${day}-${index}`}><span className={index < 6 ? "day done" : "day today"}>{index < 6 ? <Icon name="check" size={13} /> : day}</span><small>{day}</small></div>)}</div></article>
+    <article className="panel word-card"><div className="word-card-top"><span className="section-kicker">WORD OF THE DAY</span><span className="difficulty">{WORDS[0].difficulty}</span></div><div className="word-title-row"><div><h2>{WORDS[0].word}</h2><p>{WORDS[0].pronunciation} · {WORDS[0].type}</p></div><button className="sound-button" onClick={() => speak(WORDS[0].word)} aria-label="Hear pronunciation"><Icon name="sound" /></button></div><p className="definition">{WORDS[0].definition}</p><blockquote>“{WORDS[0].example}”</blockquote><button className="text-action" onClick={() => navigate("learn")}>Explore this word <Icon name="arrow" size={15} /></button></article>
+    <article className="panel activity-card"><div className="panel-heading compact"><div><span className="section-kicker">THIS WEEK</span><h2>Learning activity</h2></div><span className="up-badge">↑ 18%</span></div><div className="bar-chart">{[42,66,50,82,62,92,35].map((height,index) => <div className="bar-column" key={index}><span className={index===5?"bar active":"bar"} style={{height:`${height}%`}}/><small>{["M","T","W","T","F","S","S"][index]}</small></div>)}</div><div className="chart-summary"><span><strong>38</strong> words studied</span><span><strong>86%</strong> accuracy</span></div></article></section>
+    <section className="section-row"><div><span className="section-kicker">CONTINUE LEARNING</span><h2>Your word queue</h2></div><button className="text-action" onClick={() => navigate("collection")}>View all words <Icon name="arrow" size={15}/></button></section>
+    <section className="word-queue">{WORDS.slice(1,4).map((word,index)=><button key={word.word} className="queue-card" onClick={()=>navigate("practice")}><span className={`queue-letter color-${index}`}>{word.word[0]}</span><span className="queue-copy"><strong>{word.word}</strong><small>{word.type} · {word.difficulty}</small></span><span className="mastery"><small>{[72,48,31][index]}% mastery</small><span><i style={{width:`${[72,48,31][index]}%`}}/></span></span><Icon name="arrow" size={17}/></button>)}</section>
+  </>;
 
-        {NAV.map((n) => (
-          <button
-            key={n.id}
-            className={`sb-item ${page === n.id ? "active" : ""}`}
-            title={n.label}
-            onClick={() => setPage(n.id as PageKey)}
-          >
-            {n.icon}
-          </button>
-        ))}
+  const renderLearn = () => <><section className="page-heading"><span className="section-kicker">GUIDED LEARNING</span><h1>Build a richer vocabulary</h1><p>Learn in context, hear each word, and revisit it at the right time.</p></section><section className="lesson-hero"><div className="lesson-copy"><span className="lesson-label">TODAY’S CURATED SET</span><h2>Words for clear thinking</h2><p>Six expressive words selected to make your writing more precise.</p><div className="lesson-meta"><span><Icon name="clock" size={16}/> 8 min</span><span><Icon name="bolt" size={16}/> 120 XP</span><span><Icon name="layers" size={16}/> 6 words</span></div><button className="light-action" onClick={()=>navigate("practice")}>Begin lesson <Icon name="arrow" size={17}/></button></div><div className="floating-words"><span>precise</span><span>lucid</span><span>astute</span><span>nuance</span></div></section><section className="section-row"><div><span className="section-kicker">YOUR CURRICULUM</span><h2>Words waiting for you</h2></div><span className="muted-label">{WORDS.length} words</span></section><div className="learn-list">{WORDS.map((word,index)=><article className="learn-row" key={word.word}><span className="word-index">{String(index+1).padStart(2,"0")}</span><div className="learn-word"><strong>{word.word}</strong><span>{word.pronunciation}</span></div><span className="word-type">{word.type}</span><p>{word.definition}</p><button className="sound-button small" onClick={()=>speak(word.word)}><Icon name="sound" size={17}/></button></article>)}</div></>;
 
-        <div className="sb-spacer" />
-        <button className="sb-avatar" title={user?.email} onClick={logout}>
-          {initials}
-        </button>
-      </aside>
+  const renderPractice = () => {
+    if(sessionComplete) return <section className="completion-card"><div className="completion-burst"><Icon name="spark" size={38}/></div><span className="section-kicker">SESSION COMPLETE</span><h1>Brilliant work!</h1><p>You strengthened five new word connections. Consistency is how vocabulary sticks.</p><div className="reward-summary"><div><strong>+100</strong><span>XP earned</span></div><div><strong>+25</strong><span>Coins earned</span></div><div><strong>5</strong><span>Words reviewed</span></div></div><div className="completion-actions"><button className="secondary-action" onClick={()=>navigate("home")}>Back home</button><button className="primary-action" onClick={restartPractice}>Practice again</button></div></section>;
+    const isCorrect=selected===currentWord.definition;
+    return <><section className="practice-header"><div><span className="section-kicker">QUICK PRACTICE</span><h1>Choose the closest meaning</h1></div><span className="question-count">{quizIndex+1} / 5</span></section><div className="quiz-progress"><span style={{width:`${(quizIndex+1)*20}%`}}/></div><section className="quiz-card"><span className={`difficulty ${currentWord.difficulty.toLowerCase()}`}>{currentWord.difficulty}</span><div className="quiz-word"><button className="sound-button" onClick={()=>speak(currentWord.word)}><Icon name="sound"/></button><h2>{currentWord.word}</h2><p>{currentWord.pronunciation} · {currentWord.type}</p></div><div className="answer-list">{choices.map((choice,index)=>{const state=selected?choice===currentWord.definition?"correct":choice===selected?"wrong":"dim":"";return <button className={`answer-choice ${state}`} key={choice} onClick={()=>answer(choice)}><span>{String.fromCharCode(65+index)}</span>{choice}{state==="correct"&&<Icon name="check" size={18}/>}</button>})}</div>{selected&&<div className={`answer-feedback ${isCorrect?"success":"retry"}`}><div><strong>{isCorrect?"Exactly right!":"Not quite — here’s the answer."}</strong><p>{currentWord.example}</p></div><button className="primary-action" onClick={nextQuestion}>{quizIndex===4?"Finish session":"Next word"}<Icon name="arrow" size={17}/></button></div>}</section></>;
+  };
 
-      <div className="dash-main-wrap">
-        <header className="dash-topbar">
-          <span className="topbar-crumb">AuthFlow</span>
-          <span className="topbar-sep">›</span>
-          <span className="topbar-title">
-            {NAV.find((n) => n.id === page)?.label}
-          </span>
-          <div className="topbar-spacer" />
-          <div className="pill pill-green">
-            <span className="pulse" /> All systems normal
-          </div>
-        </header>
+  const renderCollection = () => <><section className="page-heading"><span className="section-kicker">MY WORDS</span><h1>Your growing collection</h1><p>Every word you meet becomes part of your personal vocabulary library.</p></section><section className="collection-summary"><div><strong>{progress.learned.length}</strong><span>Mastered</span></div><div><strong>{WORDS.length-progress.learned.length}</strong><span>Learning</span></div><div><strong>86%</strong><span>Recall rate</span></div></section><div className="collection-grid">{WORDS.map((word,index)=>{const known=progress.learned.includes(word.word);return <article className="collection-card" key={word.word}><div className="collection-top"><span className={`queue-letter color-${index%3}`}>{word.word[0]}</span><span className={known?"status-known":"status-learning"}>{known?"Mastered":"Learning"}</span></div><h3>{word.word}</h3><span className="pronunciation">{word.pronunciation} · {word.type}</span><p>{word.definition}</p><div className="card-mastery"><span><i style={{width:known?"100%":`${35+index*7}%`}}/></span><small>{known?"100":35+index*7}%</small></div></article>})}</div></>;
 
-        <main className="dash-content">
-          <Page />
-        </main>
-      </div>
-    </div>
-  );
+  const renderRewards = () => { const rewards=[{icon:"Aa",title:"Midnight theme",copy:"A calm, low-light reading theme.",cost:250,color:"indigo"},{icon:"2×",title:"Double XP boost",copy:"Earn twice the XP for one session.",cost:180,color:"gold"},{icon:"✦",title:"Wordsmith badge",copy:"A profile badge for dedicated learners.",cost:500,color:"rose"},{icon:"∞",title:"Streak repair",copy:"Protect your streak on one missed day.",cost:320,color:"green"}]; return <><section className="rewards-hero"><div><span className="section-kicker">REWARDS SHOP</span><h1>Learning pays off</h1><p>Turn the coins you earn through practice into perks that make learning even better.</p></div><div className="coin-balance"><span><Icon name="gem" size={25}/></span><div><small>YOUR BALANCE</small><strong>{progress.coins} coins</strong></div></div></section><section className="reward-grid">{rewards.map((reward)=><article className="reward-card" key={reward.title}><div className={`reward-icon ${reward.color}`}>{reward.icon}</div><h3>{reward.title}</h3><p>{reward.copy}</p><button onClick={()=>redeem(reward.cost,reward.title)}><span><Icon name="gem" size={15}/> {reward.cost}</span>{progress.coins>=reward.cost?"Redeem":<><Icon name="lock" size={14}/> Locked</>}</button></article>)}</section><section className="earn-panel"><div className="earn-icon"><Icon name="target" size={28}/></div><div><span className="section-kicker">NEXT BONUS</span><h2>Complete your daily goal</h2><p>Learn {Math.max(0,10-progress.completedToday)} more words to earn a 50-coin bonus.</p></div><div className="earn-progress"><strong>{progress.completedToday}/10</strong><span><i style={{width:`${progress.completedToday*10}%`}}/></span></div></section></> };
+
+  const views: Record<PageKey,()=>React.ReactNode>={home:renderHome,learn:renderLearn,practice:renderPractice,collection:renderCollection,rewards:renderRewards};
+  return <div className="lexi-app"><aside className={`lexi-sidebar ${mobileNav?"open":""}`}><button className="mobile-close" onClick={()=>setMobileNav(false)}><Icon name="close"/></button><button className="lexi-brand" onClick={()=>navigate("home")}><span className="brand-mark">L</span><span>lexiloop<small>grow with every word</small></span></button><nav>{NAV.map((item)=><button key={item.id} onClick={()=>navigate(item.id)} className={page===item.id?"active":""}><Icon name={item.icon}/><span>{item.label}</span>{item.id==="rewards"&&<small className="nav-coin">{progress.coins}</small>}</button>)}</nav><div className="sidebar-challenge"><span className="challenge-icon"><Icon name="target"/></span><strong>Daily challenge</strong><p>{progress.completedToday} of 10 words complete</p><div><span style={{width:`${progress.completedToday*10}%`}}/></div></div><button className="profile-block" onClick={logout}><span className="profile-avatar">{initials}</span><span><strong>{username}</strong><small>Level {Math.floor(progress.xp/250)+1} learner</small></span><span className="logout-copy">Sign out</span></button></aside>{mobileNav&&<button className="nav-scrim" onClick={()=>setMobileNav(false)} aria-label="Close menu"/>}<main className="lexi-main"><button className="mobile-menu" onClick={()=>setMobileNav(true)}><span></span><span></span><span></span></button>{views[page]()}</main>{toast&&<div className="lexi-toast"><Icon name="spark" size={18}/>{toast}</div>}</div>;
 }
