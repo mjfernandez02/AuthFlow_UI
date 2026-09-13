@@ -4,8 +4,20 @@ import { useToast } from "./ToastContext";
 
 export const AuthContext = createContext();
 
+const decodeUser = (token) => {
+  if (!token) return null;
+  try {
+    const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(atob(payload));
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() =>
+    decodeUser(localStorage.getItem("accessToken")),
+  );
   const [accessToken, setAccessToken] = useState(
     localStorage.getItem("accessToken"),
   );
@@ -32,8 +44,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("refreshToken", data.refreshToken);
 
       // Auto-decode JWT to get user info
-      const decoded = JSON.parse(atob(data.accessToken.split(".")[1]));
-      setUser(decoded);
+      setUser(decodeUser(data.accessToken));
 
       return { success: true };
     } catch (err) {
@@ -80,8 +91,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
 
-      const decoded = JSON.parse(atob(data.accessToken.split(".")[1]));
-      setUser(decoded);
+      setUser(decodeUser(data.accessToken));
 
       return true;
     } catch (err) {

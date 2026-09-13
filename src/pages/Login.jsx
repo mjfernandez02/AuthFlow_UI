@@ -93,11 +93,11 @@ const Login = () => {
       <div className="auth-card">
         <div className="auth-badge">
           <span className="auth-badge-dot" />
-          Secure sign-in
+          Welcome to lexiloop
         </div>
 
         <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-sub">Sign in to your account to continue</p>
+        <p className="auth-sub">Pick up your words right where you left off.</p>
 
         {error && (
           <div className="alert alert-error">
@@ -151,8 +151,8 @@ const Login = () => {
 
         <p className="auth-footer">
           No account?{" "}
-          <RouterLink to="/register" className="auth-link">
-            Create one free
+          <RouterLink to="/signup" className="auth-link">
+            Start learning free
           </RouterLink>
         </p>
       </div>

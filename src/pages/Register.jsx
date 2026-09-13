@@ -53,11 +53,11 @@ const Register = () => {
       <div className="auth-card">
         <div className="auth-badge">
           <span className="auth-badge-dot" />
-          Free to start
+          Your word journey starts here
         </div>
 
-        <h1 className="auth-title">Create account</h1>
-        <p className="auth-sub">Join developers already using AuthFlow</p>
+        <h1 className="auth-title">Create your account</h1>
+        <p className="auth-sub">A few minutes a day can change how you express yourself.</p>
 
         {error && (
           <div className="alert alert-error">
