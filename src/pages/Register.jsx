@@ -57,7 +57,9 @@ const Register = () => {
         </div>
 
         <h1 className="auth-title">Create your account</h1>
-        <p className="auth-sub">A few minutes a day can change how you express yourself.</p>
+        <p className="auth-sub">
+          A few minutes a day can change how you express yourself.
+        </p>
 
         {error && (
           <div className="alert alert-error">

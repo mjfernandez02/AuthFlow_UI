@@ -39,38 +39,41 @@ export const AuthProvider = ({ children }) => {
     [],
   );
 
-  const login = useCallback(async (email, password) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiPost(
-        "/login",
-        { email, password },
-        { credentials: "include" },
-      );
+  const login = useCallback(
+    async (email, password) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await apiPost(
+          "/login",
+          { email, password },
+          { credentials: "include" },
+        );
 
-      completeAuthentication(data.accessToken, data.refreshToken);
+        completeAuthentication(data.accessToken, data.refreshToken);
 
-      return { success: true };
-    } catch (err) {
-      const errObj = /** @type {any} */ (err);
-      const code = errObj?.errorCode || "SERVER_ERROR";
-      if (code === "VALIDATION_ERROR") {
-        const fieldErrors = CODE_MAP.VALIDATION_ERROR(errObj);
-        setError(Object.values(fieldErrors)[0] || "Validation error");
-        return { success: false, fieldErrors, errorCode: code };
+        return { success: true };
+      } catch (err) {
+        const errObj = /** @type {any} */ (err);
+        const code = errObj?.errorCode || "SERVER_ERROR";
+        if (code === "VALIDATION_ERROR") {
+          const fieldErrors = CODE_MAP.VALIDATION_ERROR(errObj);
+          setError(Object.values(fieldErrors)[0] || "Validation error");
+          return { success: false, fieldErrors, errorCode: code };
+        }
+
+        const message =
+          codeMessage(code, errObj) || errObj?.message || "Login failed";
+        if (code === "RATE_LIMITED" || code === "SERVER_ERROR")
+          showToast(message, "error");
+        setError(message);
+        return { success: false, error: message, errorCode: code };
+      } finally {
+        setLoading(false);
       }
-
-      const message =
-        codeMessage(code, errObj) || errObj?.message || "Login failed";
-      if (code === "RATE_LIMITED" || code === "SERVER_ERROR")
-        showToast(message, "error");
-      setError(message);
-      return { success: false, error: message, errorCode: code };
-    } finally {
-      setLoading(false);
-    }
-  }, [completeAuthentication, showToast]);
+    },
+    [completeAuthentication, showToast],
+  );
 
   const logout = useCallback(async () => {
     try {

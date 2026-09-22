@@ -6,8 +6,8 @@ const Navbar = () => {
   const initials = user?.email
     ? user.email.split("@")[0].slice(0, 2).toUpperCase()
     : user?.name
-    ? user.name.slice(0, 2).toUpperCase()
-    : "??";
+      ? user.name.slice(0, 2).toUpperCase()
+      : "??";
 
   return (
     <nav className="navbar">
