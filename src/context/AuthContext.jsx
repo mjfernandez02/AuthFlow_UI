@@ -28,6 +28,17 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const { showToast } = useToast();
 
+  const completeAuthentication = useCallback(
+    (newAccessToken, newRefreshToken) => {
+      setAccessToken(newAccessToken);
+      setRefreshToken(newRefreshToken);
+      setUser(decodeUser(newAccessToken));
+      localStorage.setItem("accessToken", newAccessToken);
+      localStorage.setItem("refreshToken", newRefreshToken);
+    },
+    [],
+  );
+
   const login = useCallback(async (email, password) => {
     setLoading(true);
     setError(null);
@@ -38,13 +49,7 @@ export const AuthProvider = ({ children }) => {
         { credentials: "include" },
       );
 
-      setAccessToken(data.accessToken);
-      setRefreshToken(data.refreshToken);
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
-
-      // Auto-decode JWT to get user info
-      setUser(decodeUser(data.accessToken));
+      completeAuthentication(data.accessToken, data.refreshToken);
 
       return { success: true };
     } catch (err) {
@@ -65,7 +70,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [completeAuthentication, showToast]);
 
   const logout = useCallback(async () => {
     try {
@@ -86,12 +91,7 @@ export const AuthProvider = ({ children }) => {
     if (!refreshToken) return false;
     try {
       const data = await apiPost("/refresh", { refreshToken });
-      setAccessToken(data.accessToken);
-      setRefreshToken(data.refreshToken);
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
-
-      setUser(decodeUser(data.accessToken));
+      completeAuthentication(data.accessToken, data.refreshToken);
 
       return true;
     } catch (err) {
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }) => {
       await logout();
       return false;
     }
-  }, [refreshToken, logout]);
+  }, [refreshToken, logout, completeAuthentication]);
 
   return (
     <AuthContext.Provider
@@ -112,6 +112,7 @@ export const AuthProvider = ({ children }) => {
         error,
         login,
         logout,
+        completeAuthentication,
         refreshAccessToken,
         isAuthenticated: !!accessToken,
       }}

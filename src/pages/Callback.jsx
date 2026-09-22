@@ -1,40 +1,23 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { Alert, Box, Container, Heading, Spinner, Text, VStack } from "@chakra-ui/react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { apiPost } from "../utils/apiClient";
-import { useToast } from "../context/ToastContext";
-import {
-  Container,
-  Box,
-  CircularProgress,
-  Typography,
-  Alert,
-  Paper,
-  Stack,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ErrorIcon from "@mui/icons-material/Error";
 
 const Callback = () => {
   const [searchParams] = useSearchParams();
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [status, setStatus] = useState("processing"); // processing | success | error
+  const [status, setStatus] = useState("processing");
   const navigate = useNavigate();
-  const { refreshAccessToken } = useAuth();
-  const theme = useTheme();
-  const { showToast } = useToast();
+  const { completeAuthentication } = useAuth();
 
   useEffect(() => {
     const handleCallback = async () => {
       const code = searchParams.get("code");
-      const state = searchParams.get("state");
 
       if (!code) {
         setError("Missing authorization code");
         setStatus("error");
-        setLoading(false);
         return;
       }
 
@@ -44,16 +27,14 @@ const Callback = () => {
       if (!clientId || !redirectUri) {
         setError("Missing OAuth2 configuration");
         setStatus("error");
-        setLoading(false);
         return;
       }
 
       try {
         const clientSecret =
           sessionStorage.getItem("oauth_client_secret") ||
-          process.env.REACT_APP_CLIENT_SECRET ||
+          import.meta.env.REACT_APP_CLIENT_SECRET ||
           null;
-
         const codeVerifier = sessionStorage.getItem("pkce_code_verifier");
 
         const body = {
@@ -62,15 +43,13 @@ const Callback = () => {
           client_id: clientId,
           redirect_uri: redirectUri,
         };
+
         if (clientSecret) body.client_secret = clientSecret;
         if (codeVerifier) body.code_verifier = codeVerifier;
 
         const data = await apiPost("/token", body);
 
-        localStorage.setItem("accessToken", data.access_token);
-        localStorage.setItem("refreshToken", data.refresh_token);
-
-        await refreshAccessToken();
+        completeAuthentication(data.access_token, data.refresh_token);
 
         sessionStorage.removeItem("oauth_client_id");
         sessionStorage.removeItem("oauth_redirect_uri");
@@ -78,88 +57,52 @@ const Callback = () => {
         sessionStorage.removeItem("oauth_client_secret");
 
         setStatus("success");
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 1500);
-      } catch (err) {
-        const errObj = /** @type {any} */ (err);
-        setError(errObj?.message || "Token exchange failed");
+        window.setTimeout(() => navigate("/practice"), 1500);
+      } catch (caughtError) {
+        setError(caughtError?.message || "Token exchange failed");
         setStatus("error");
-      } finally {
-        setLoading(false);
       }
     };
 
     handleCallback();
-  }, [searchParams, navigate, refreshAccessToken]);
+  }, [searchParams, navigate, completeAuthentication]);
 
   return (
-    <Container
-      maxWidth="sm"
-      sx={{ py: 12, display: "flex", minHeight: "80vh", alignItems: "center" }}
-    >
-      <Paper
-        elevation={3}
-        sx={{ p: 4, borderRadius: 2, width: "100%", textAlign: "center" }}
-      >
+    <Container maxWidth="md" py="24">
+      <Box borderWidth="1px" borderRadius="lg" p="8" textAlign="center">
         {status === "processing" && (
-          <Stack spacing={3} alignItems="center">
-            <CircularProgress size={60} />
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
-                Processing Login...
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Please wait while we complete your authentication
-              </Typography>
-            </Box>
-          </Stack>
+          <VStack gap="4">
+            <Spinner size="xl" />
+            <Heading size="lg">Processing login…</Heading>
+            <Text color="fg.muted">
+              Please wait while we complete your authentication.
+            </Text>
+          </VStack>
         )}
 
         {status === "success" && (
-          <Stack spacing={3} alignItems="center">
-            <CheckCircleIcon
-              sx={{
-                fontSize: 80,
-                color: "success.main",
-              }}
-            />
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
-                Login Successful!
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Redirecting you to dashboard...
-              </Typography>
-            </Box>
-          </Stack>
+          <VStack gap="4">
+            <Text fontSize="5xl" color="green.600" aria-hidden="true">
+              ✓
+            </Text>
+            <Heading size="lg">Login successful</Heading>
+            <Text color="fg.muted">Redirecting you to practice…</Text>
+          </VStack>
         )}
 
         {status === "error" && (
-          <Stack spacing={3}>
-            <Box sx={{ textAlign: "center" }}>
-              <ErrorIcon
-                sx={{
-                  fontSize: 80,
-                  color: "error.main",
-                  mb: 2,
-                }}
-              />
-              <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
-                Authentication Failed
-              </Typography>
-            </Box>
+          <VStack gap="4">
+            <Heading size="lg">Authentication failed</Heading>
             {error && (
-              <Alert severity="error" sx={{ textAlign: "left" }}>
-                {error}
-              </Alert>
+              <Alert.Root status="error" textAlign="left">
+                <Alert.Indicator />
+                <Alert.Description>{error}</Alert.Description>
+              </Alert.Root>
             )}
-            <Typography variant="body2" color="textSecondary">
-              Please try logging in again
-            </Typography>
-          </Stack>
+            <Text color="fg.muted">Please try logging in again.</Text>
+          </VStack>
         )}
-      </Paper>
+      </Box>
     </Container>
   );
 };

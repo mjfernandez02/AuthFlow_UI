@@ -73,7 +73,7 @@ const Login = () => {
       setError(null);
       const result = await login(email, password);
       if (result && result.success) {
-        navigate("/dashboard");
+        navigate("/practice");
       } else {
         if (result && result.fieldErrors) {
           setFieldErrors(result.fieldErrors);
@@ -93,7 +93,7 @@ const Login = () => {
       <div className="auth-card">
         <div className="auth-badge">
           <span className="auth-badge-dot" />
-          Welcome to lexiloop
+          Welcome to WordWell
         </div>
 
         <h1 className="auth-title">Welcome back</h1>

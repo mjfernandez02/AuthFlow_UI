@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { Alert } from "@chakra-ui/react";
 
 const ToastContext = createContext({
-  showToast: (message, severity = "info") => {},
+  showToast: () => {},
 });
 
 export const ToastProvider = ({ children }) => {
@@ -17,33 +16,42 @@ export const ToastProvider = ({ children }) => {
     setToast({ open: true, message, severity });
   }, []);
 
-  const handleClose = () => setToast((t) => ({ ...t, open: false }));
+  useEffect(() => {
+    if (!toast.open) return undefined;
+
+    const timeout = window.setTimeout(() => {
+      setToast((current) => ({ ...current, open: false }));
+    }, 6000);
+
+    return () => window.clearTimeout(timeout);
+  }, [toast.open, toast.message]);
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={6000}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleClose}
-          severity={toast.severity}
-          sx={{ width: "100%" }}
+      {toast.open && (
+        <Alert.Root
+          status={toast.severity}
+          position="fixed"
+          top="4"
+          left="50%"
+          transform="translateX(-50%)"
+          width="fit-content"
+          maxWidth="calc(100vw - 2rem)"
+          zIndex="toast"
         >
-          {toast.message}
-        </Alert>
-      </Snackbar>
+          <Alert.Indicator />
+          <Alert.Title>{toast.message}</Alert.Title>
+        </Alert.Root>
+      )}
     </ToastContext.Provider>
   );
 };
 
 export const useToast = () => {
-  const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error("useToast must be used within ToastProvider");
-  return ctx;
+  const context = useContext(ToastContext);
+  if (!context) throw new Error("useToast must be used within ToastProvider");
+  return context;
 };
 
 export default ToastContext;

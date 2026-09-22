@@ -1,27 +1,27 @@
-import { Link as RouterLink, useLocation } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
-  const location = useLocation();
   const initials = user?.email
     ? user.email.split("@")[0].slice(0, 2).toUpperCase()
     : user?.name
     ? user.name.slice(0, 2).toUpperCase()
     : "??";
 
-  if (location.pathname === "/dashboard") return null;
-
   return (
     <nav className="navbar">
       <RouterLink to="/" className="navbar-brand">
-        <div className="navbar-logo">L</div>
-        <span className="navbar-name">lexiloop</span>
+        <div className="navbar-logo">W</div>
+        <span className="navbar-name">WordWell</span>
       </RouterLink>
 
       <div className="navbar-links">
         {user ? (
           <>
+            <RouterLink to="/practice" className="btn btn-ghost">
+              Practice
+            </RouterLink>
             <div
               style={{
                 display: "flex",
