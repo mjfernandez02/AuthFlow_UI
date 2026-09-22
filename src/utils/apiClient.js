@@ -23,7 +23,7 @@ async function parseJsonSafe(res) {
   try {
     return await res.json();
   } catch (e) {
-    return null;
+    return console.log(e);
   }
 }
 
