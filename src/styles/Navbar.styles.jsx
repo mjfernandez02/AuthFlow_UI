@@ -26,17 +26,13 @@ export const NavbarRoot = (props) => (
     top="0"
     zIndex="10"
     minH="68px"
-    padding="0 clamp(18px, 5vw, 72px)"
+    px={{ base: "18px", md: "5vw", lg: "72px" }}
+    py="0"
     align="center"
     justify="space-between"
     gap="24px"
     borderBottom="1px solid #e3e7df"
     background="rgba(247, 247, 242, 0.94)"
-    css={{
-      "@media (max-width: 760px)": {
-        padding: "0 15px",
-      },
-    }}
     {...props}
   />
 );
@@ -76,11 +72,7 @@ export const NavbarName = (props) => (
     fontFamily="Georgia, serif"
     fontSize="20px"
     fontWeight="700"
-    css={{
-      "@media (max-width: 480px)": {
-        display: "none",
-      },
-    }}
+    display={{ base: "none", sm: "inline" }}
     {...props}
   />
 );
@@ -93,12 +85,8 @@ export const NavbarGhostLink = (props) => (
   <Link
     asChild
     {...actionStyles}
+    display={{ base: "none", sm: "inline-flex" }}
     _hover={{ background: "app.surface.hover", textDecoration: "none" }}
-    css={{
-      "@media (max-width: 480px)": {
-        display: "none",
-      },
-    }}
   >
     <RouterLink {...props} />
   </Link>
@@ -134,11 +122,7 @@ export const NavbarUser = (props) => (
     border="1px solid"
     borderColor="app.border.card"
     borderRadius="8px"
-    css={{
-      "@media (max-width: 760px)": {
-        display: "none",
-      },
-    }}
+    display={{ base: "none", md: "flex" }}
     {...props}
   />
 );

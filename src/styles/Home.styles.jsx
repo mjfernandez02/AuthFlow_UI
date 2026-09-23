@@ -11,19 +11,19 @@ import { Link as RouterLink } from "react-router-dom";
 const orbitPlacements = {
   one: {
     top: "22%",
-    left: "clamp(24px, 7vw, 120px)",
+    left: { base: "24px", lg: "7vw", "2xl": "120px" },
     animationDuration: "8s",
     animationDelay: "-1s",
   },
   two: {
     top: "28%",
-    right: "clamp(24px, 6vw, 110px)",
+    right: { base: "24px", lg: "6vw", "2xl": "110px" },
     animationDuration: "10s",
     animationDelay: "-4s",
   },
   three: {
     bottom: "20%",
-    left: "clamp(30px, 12vw, 210px)",
+    left: { base: "30px", lg: "12vw", "2xl": "210px" },
     animationDuration: "9s",
     animationDelay: "-6s",
   },
@@ -37,17 +37,13 @@ export const HomeHero = (props) => (
   <Flex
     as="section"
     position="relative"
-    minH="560px"
-    padding="100px 24px 160px"
+    minH={{ base: "520px", md: "560px" }}
+    px="24px"
+    pt={{ base: "72px", md: "100px" }}
+    pb="160px"
     direction="column"
     align="center"
     textAlign="center"
-    css={{
-      "@media (max-width: 760px)": {
-        minHeight: "520px",
-        paddingTop: "72px",
-      },
-    }}
     {...props}
   />
 );
@@ -80,7 +76,7 @@ export const HeroHeading = (props) => (
     color="#223129"
     fontStyle="normal"
     fontFamily="Georgia, serif"
-    fontSize="clamp(46px, 7vw, 78px)"
+    fontSize={{ base: "44px", sm: "46px", md: "54px", lg: "72px", xl: "78px" }}
     fontWeight="600"
     letterSpacing="-0.04em"
     lineHeight="1"
@@ -89,9 +85,6 @@ export const HeroHeading = (props) => (
         color: "#287058",
         fontWeight: "500",
         fontStyle: "italic",
-      },
-      "@media (max-width: 480px)": {
-        fontSize: "44px",
       },
     }}
     {...props}
@@ -164,13 +157,8 @@ export const WordOrbit = (props) => (
     position="absolute"
     zIndex="0"
     inset="0"
-    display="none"
+    display={{ base: "none", lg: "block" }}
     pointerEvents="none"
-    css={{
-      "@media (min-width: 900px)": {
-        display: "block",
-      },
-    }}
     {...props}
   />
 );
@@ -221,16 +209,12 @@ export const HomeFeatures = (props) => (
     as="section"
     width="100%"
     maxW="1050px"
-    margin="-85px auto 0"
+    mx="auto"
+    mt={{ base: "-60px", md: "-85px" }}
+    mb="0"
     padding="0 24px 64px"
-    gridTemplateColumns="repeat(3, 1fr)"
+    gridTemplateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
     gap="12px"
-    css={{
-      "@media (max-width: 760px)": {
-        gridTemplateColumns: "1fr",
-        marginTop: "-60px",
-      },
-    }}
     {...props}
   />
 );
