@@ -7,15 +7,15 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Callback from "./pages/Callback";
-import PracticePage from "./pages/PracticePage";
+// import PracticePage from "./pages/PracticePage";
 
-function ProtectedPractice() {
-  return (
-    <ProtectedRoute>
-      <PracticePage />
-    </ProtectedRoute>
-  );
-}
+// function ProtectedPractice() {
+//   return (
+//     <ProtectedRoute>
+//       <PracticePage />
+//     </ProtectedRoute>
+//   );
+// }
 
 export default function App() {
   return (
@@ -28,7 +28,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/signup" element={<Register />} />
           <Route path="/callback" element={<Callback />} />
-          <Route path="/practice" element={<ProtectedPractice />} />
+          {/* <Route path="/practice" element={} /> */}
           <Route
             path="/dashboard"
             element={
