@@ -1,8 +1,21 @@
-import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import {
+  NavbarAvatar,
+  NavbarBrand,
+  NavbarGhostLink,
+  NavbarLinks,
+  NavbarLogo,
+  NavbarName,
+  NavbarOutlineButton,
+  NavbarPrimaryLink,
+  NavbarRoot,
+  NavbarUser,
+  NavbarUserName,
+} from "../styles/Navbar.styles";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+
   const initials = user?.email
     ? user.email.split("@")[0].slice(0, 2).toUpperCase()
     : user?.name
@@ -10,65 +23,32 @@ const Navbar = () => {
       : "??";
 
   return (
-    <nav className="navbar">
-      <RouterLink to="/" className="navbar-brand">
-        <div className="navbar-logo">W</div>
-        <span className="navbar-name">WordWell</span>
-      </RouterLink>
+    <NavbarRoot>
+      <NavbarBrand to="/">
+        <NavbarLogo>W</NavbarLogo>
+        <NavbarName>WordWell</NavbarName>
+      </NavbarBrand>
 
-      <div className="navbar-links">
+      <NavbarLinks>
         {user ? (
           <>
-            <RouterLink to="/practice" className="btn btn-ghost">
-              Practice
-            </RouterLink>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "6px 12px",
-                background: "var(--surface2)",
-                border: "1px solid var(--border2)",
-                borderRadius: 8,
-              }}
-            >
-              <div
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 6,
-                  background: "linear-gradient(135deg, #6366f1, #818cf8)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "#fff",
-                }}
-              >
-                {initials}
-              </div>
-              <span style={{ fontSize: 13, color: "var(--text)" }}>
+            <NavbarGhostLink to="/practice">Practice</NavbarGhostLink>
+            <NavbarUser>
+              <NavbarAvatar>{initials}</NavbarAvatar>
+              <NavbarUserName>
                 {user?.email || user?.name || "User"}
-              </span>
-            </div>
-            <button className="btn btn-outline" onClick={logout}>
-              Sign out
-            </button>
+              </NavbarUserName>
+            </NavbarUser>
+            <NavbarOutlineButton onClick={logout}>Sign out</NavbarOutlineButton>
           </>
         ) : (
           <>
-            <RouterLink to="/login" className="btn btn-ghost">
-              Sign in
-            </RouterLink>
-            <RouterLink to="/signup" className="btn btn-primary">
-              Get started
-            </RouterLink>
+            <NavbarGhostLink to="/login">Sign in</NavbarGhostLink>
+            <NavbarPrimaryLink to="/signup">Get started</NavbarPrimaryLink>
           </>
         )}
-      </div>
-    </nav>
+      </NavbarLinks>
+    </NavbarRoot>
   );
 };
 
