@@ -1,14 +1,29 @@
 import { useState } from "react";
-import {
-  useNavigate,
-  useSearchParams,
-  Link as RouterLink,
-} from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { API_URL } from "../config/api";
 import { CODE_MAP, codeMessage } from "../utils/apiClient";
 import { useToast } from "../context/ToastContext";
 import { generateCodeVerifier, generateCodeChallenge } from "../pkce";
+import {
+  LoginAlert,
+  LoginBadge,
+  LoginBadgeDot,
+  LoginCard,
+  LoginDivider,
+  LoginField,
+  LoginFieldError,
+  LoginFooter,
+  LoginFooterLink,
+  LoginGrid,
+  LoginInput,
+  LoginLabel,
+  LoginOrb,
+  LoginPage,
+  LoginSubmit,
+  LoginSubtitle,
+  LoginTitle,
+} from "../styles/Login.styles";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -86,30 +101,31 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div className="orb orb-1" style={{ opacity: 0.2 }} />
-      <div className="grid-bg" />
+    <LoginPage>
+      <LoginOrb opacity="0.2" />
+      <LoginGrid />
 
-      <div className="auth-card">
-        <div className="auth-badge">
-          <span className="auth-badge-dot" />
+      <LoginCard>
+        <LoginBadge>
+          <LoginBadgeDot />
           Welcome to WordWell
-        </div>
+        </LoginBadge>
 
-        <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-sub">Pick up your words right where you left off.</p>
+        <LoginTitle>Welcome back</LoginTitle>
+        <LoginSubtitle>
+          Pick up your words right where you left off.
+        </LoginSubtitle>
 
         {error && (
-          <div className="alert alert-error">
+          <LoginAlert>
             <span>⚠</span> {error}
-          </div>
+          </LoginAlert>
         )}
 
         <form onSubmit={handleLogin}>
-          <div className="field">
-            <label className="field-label">Email address</label>
-            <input
-              className="field-input"
+          <LoginField>
+            <LoginLabel>Email address</LoginLabel>
+            <LoginInput
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -118,16 +134,13 @@ const Login = () => {
               autoComplete="email"
             />
             {fieldErrors.email && (
-              <div className="err" style={{ color: "#b00020" }}>
-                {fieldErrors.email}
-              </div>
+              <LoginFieldError>{fieldErrors.email}</LoginFieldError>
             )}
-          </div>
+          </LoginField>
 
-          <div className="field">
-            <label className="field-label">Password</label>
-            <input
-              className="field-input"
+          <LoginField>
+            <LoginLabel>Password</LoginLabel>
+            <LoginInput
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -136,27 +149,23 @@ const Login = () => {
               autoComplete="current-password"
             />
             {fieldErrors.password && (
-              <div className="err" style={{ color: "#b00020" }}>
-                {fieldErrors.password}
-              </div>
+              <LoginFieldError>{fieldErrors.password}</LoginFieldError>
             )}
-          </div>
+          </LoginField>
 
-          <button type="submit" className="btn-submit" disabled={loading}>
+          <LoginSubmit type="submit" disabled={loading}>
             {loading ? "Signing in…" : "Sign in →"}
-          </button>
+          </LoginSubmit>
         </form>
 
-        <div className="auth-divider" />
+        <LoginDivider />
 
-        <p className="auth-footer">
+        <LoginFooter>
           No account?{" "}
-          <RouterLink to="/signup" className="auth-link">
-            Start learning free
-          </RouterLink>
-        </p>
-      </div>
-    </div>
+          <LoginFooterLink to="/signup">Start learning free</LoginFooterLink>
+        </LoginFooter>
+      </LoginCard>
+    </LoginPage>
   );
 };
 

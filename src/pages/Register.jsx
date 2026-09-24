@@ -1,7 +1,25 @@
 import { useState } from "react";
-import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { apiPost, CODE_MAP, codeMessage } from "../utils/apiClient";
 import { useToast } from "../context/ToastContext";
+import {
+  RegisterAlert,
+  RegisterBadge,
+  RegisterBadgeDot,
+  RegisterCard,
+  RegisterDivider,
+  RegisterField,
+  RegisterFooter,
+  RegisterFooterLink,
+  RegisterGrid,
+  RegisterInput,
+  RegisterLabel,
+  RegisterOrb,
+  RegisterPage,
+  RegisterSubmit,
+  RegisterSubtitle,
+  RegisterTitle,
+} from "../styles/Register.styles";
 
 const Register = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -43,41 +61,37 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div
-        className="orb orb-2"
-        style={{ opacity: 0.2, top: "-50px", right: "-60px" }}
-      />
-      <div className="grid-bg" />
+    <RegisterPage>
+      <RegisterOrb opacity="0.2" />
+      <RegisterGrid />
 
-      <div className="auth-card">
-        <div className="auth-badge">
-          <span className="auth-badge-dot" />
+      <RegisterCard>
+        <RegisterBadge>
+          <RegisterBadgeDot />
           Your word journey starts here
-        </div>
+        </RegisterBadge>
 
-        <h1 className="auth-title">Create your account</h1>
-        <p className="auth-sub">
+        <RegisterTitle>Create your account</RegisterTitle>
+        <RegisterSubtitle>
           A few minutes a day can change how you express yourself.
-        </p>
+        </RegisterSubtitle>
 
         {error && (
-          <div className="alert alert-error">
+          <RegisterAlert>
             <span>⚠</span> {error}
-          </div>
+          </RegisterAlert>
         )}
 
         {success && (
-          <div className="alert alert-success">
+          <RegisterAlert success>
             <span>✓</span> Account created — redirecting…
-          </div>
+          </RegisterAlert>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="field">
-            <label className="field-label">Email address</label>
-            <input
-              className="field-input"
+          <RegisterField>
+            <RegisterLabel>Email address</RegisterLabel>
+            <RegisterInput
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -85,12 +99,11 @@ const Register = () => {
               required
               autoComplete="email"
             />
-          </div>
+          </RegisterField>
 
-          <div className="field">
-            <label className="field-label">Password</label>
-            <input
-              className="field-input"
+          <RegisterField>
+            <RegisterLabel>Password</RegisterLabel>
+            <RegisterInput
               type="password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -98,27 +111,21 @@ const Register = () => {
               required
               autoComplete="new-password"
             />
-          </div>
+          </RegisterField>
 
-          <button
-            type="submit"
-            className="btn-submit"
-            disabled={loading || success}
-          >
+          <RegisterSubmit type="submit" disabled={loading || success}>
             {loading ? "Creating account…" : "Create account →"}
-          </button>
+          </RegisterSubmit>
         </form>
 
-        <div className="auth-divider" />
+        <RegisterDivider />
 
-        <p className="auth-footer">
+        <RegisterFooter>
           Already have an account?{" "}
-          <RouterLink to="/login" className="auth-link">
-            Sign in
-          </RouterLink>
-        </p>
-      </div>
-    </div>
+          <RegisterFooterLink to="/login">Sign in</RegisterFooterLink>
+        </RegisterFooter>
+      </RegisterCard>
+    </RegisterPage>
   );
 };
 
