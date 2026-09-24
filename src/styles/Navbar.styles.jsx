@@ -81,12 +81,60 @@ export const NavbarLinks = (props) => (
   <Flex align="center" gap="10px" {...props} />
 );
 
-export const NavbarGhostLink = (props) => (
+export const NavbarStats = (props) => (
+  <Flex
+    display={{ base: "none", lg: "flex" }}
+    align="center"
+    gap="8px"
+    {...props}
+  />
+);
+
+export const NavbarStatPill = ({ tone = "brand", ...props }) => (
+  <Flex
+    minH="36px"
+    padding="0 12px"
+    align="center"
+    justify="center"
+    gap="6px"
+    border="1px solid"
+    borderColor={tone === "reward" ? "reward.500" : "app.border.accent"}
+    borderRadius="999px"
+    color={tone === "reward" ? "app.reward.default" : "app.accent.text"}
+    background="app.surface.card"
+    fontSize="12px"
+    fontWeight="700"
+    whiteSpace="nowrap"
+    {...props}
+  />
+);
+
+export const NavbarAppLinks = (props) => (
+  <Flex
+    position={{ base: "static", md: "absolute" }}
+    left={{ md: "50%" }}
+    transform={{ md: "translateX(-50%)" }}
+    marginLeft={{ base: "auto", md: "0" }}
+    align="center"
+    gap={{ base: "2px", sm: "6px" }}
+    {...props}
+  />
+);
+
+export const NavbarGhostLink = ({ active = false, ...props }) => (
   <Link
     asChild
     {...actionStyles}
-    display={{ base: "none", sm: "inline-flex" }}
-    _hover={{ background: "app.surface.hover", textDecoration: "none" }}
+    minH={{ base: "34px", sm: "40px" }}
+    padding={{ base: "0 8px", sm: "0 15px" }}
+    color={active ? "app.accent.text" : "inherit"}
+    background={active ? "app.surface.hover" : "transparent"}
+    fontSize={{ base: "12px", sm: "13px" }}
+    _hover={{
+      color: "app.accent.text",
+      background: "app.surface.hover",
+      textDecoration: "none",
+    }}
   >
     <RouterLink {...props} />
   </Link>
@@ -136,7 +184,7 @@ export const NavbarAvatar = (props) => (
     flexShrink="0"
     borderRadius="6px"
     color="white"
-    background="linear-gradient(135deg, #6366f1, #818cf8)"
+    background="app.action.default"
     fontSize="10px"
     fontWeight="700"
     {...props}

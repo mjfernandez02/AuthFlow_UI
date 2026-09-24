@@ -38,6 +38,12 @@ const customConfig = defineConfig({
           900: { value: "#223129" },
           950: { value: "#24312b" },
         },
+        reward: {
+          50: { value: "#fff7ed" },
+          500: { value: "#e97a34" },
+          600: { value: "#e97a34" },
+          700: { value: "#d46625" },
+        },
       },
     },
 
@@ -67,6 +73,11 @@ const customConfig = defineConfig({
             page: { value: "{colors.neutral.50}" },
             card: { value: "{colors.white}" },
             hover: { value: "{colors.brand.100}" },
+          },
+          reward: {
+            default: { value: "{colors.reward.600}" },
+            hover: { value: "{colors.reward.700}" },
+            subtle: { value: "{colors.reward.50}" },
           },
         },
       },
