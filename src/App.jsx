@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Callback from "./pages/Callback";
 import Onboarding from "./pages/Onboarding";
+import Practice from "./pages/Practice";
 // import PracticePage from "./pages/PracticePage";
 
 // function ProtectedPractice() {
@@ -30,14 +31,7 @@ export default function App() {
           <Route path="/signup" element={<Register />} />
           <Route path="/callback" element={<Callback />} />
           <Route path="/onboarding" element={<Onboarding />} />
-          <Route
-            path="/practice"
-            element={
-              <ProtectedRoute>
-                <Onboarding />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/practice" element={<Practice />} />
           <Route
             path="/dashboard"
             element={
