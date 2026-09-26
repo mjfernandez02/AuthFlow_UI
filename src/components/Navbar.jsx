@@ -21,7 +21,7 @@ import { Coin, Zap } from "./Logos";
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { pathname, hash } = useLocation();
-  const isAppPreview = ["/onboarding", "/practice"].includes(pathname);
+  const isAppPreview = ["/onboarding", "/practice", "/pet"].includes(pathname);
   const showAppNavigation = Boolean(user) || isAppPreview;
   const experience = user?.xp ?? user?.experience ?? 0;
   const coins = user?.coins ?? 0;
@@ -50,7 +50,7 @@ const Navbar = () => {
           <NavbarGhostLink to="/practice" active={pathname === "/practice"}>
             Practice
           </NavbarGhostLink>
-          <NavbarGhostLink to="/onboarding#pet" active={hash === "#pet"}>
+          <NavbarGhostLink to="/pet" active={pathname === "/pet"}>
             My Pet
           </NavbarGhostLink>
         </NavbarAppLinks>

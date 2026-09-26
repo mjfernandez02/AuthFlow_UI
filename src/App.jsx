@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import Callback from "./pages/Callback";
 import Onboarding from "./pages/Onboarding";
 import Practice from "./pages/Practice";
+import MyPet from "./pages/MyPet";
 // import PracticePage from "./pages/PracticePage";
 
 // function ProtectedPractice() {
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/callback" element={<Callback />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/practice" element={<Practice />} />
+          <Route path="/pet" element={<MyPet />} />
           <Route
             path="/dashboard"
             element={
